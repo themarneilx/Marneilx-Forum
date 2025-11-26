@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Posts: 
+    // - Read: Public
+    // - Create: Authenticated
+    // - Update: Authenticated (for votes - essentially public write for specific fields, but logic handled in client for now. ideally should validate fields)
+    // - Delete: Author only
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.authorId;
+
+      // Comments: Public read, Authenticated create
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if request.auth != null;
+      }
+    }
+    
+    // Users: Public read (for Online Users list), Owner write (for presence)
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
