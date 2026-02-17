@@ -50,7 +50,14 @@ export default function PostCard({ post: initialPost }: PostCardProps) {
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, "posts", initialPost.id), (docSnapshot) => {
       if (docSnapshot.exists()) {
-        setPost({ id: docSnapshot.id, ...docSnapshot.data() } as Post);
+        const data = docSnapshot.data();
+        setPost({ 
+          id: docSnapshot.id, 
+          ...data,
+          createdAt: typeof data.createdAt?.toMillis === 'function' 
+            ? data.createdAt.toMillis() 
+            : (data.createdAt || Date.now()),
+        } as Post);
       }
     });
     return () => unsubscribe();

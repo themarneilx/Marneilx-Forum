@@ -12,10 +12,16 @@ export async function GET() {
       .limit(50)
       .get();
 
-    const posts: Post[] = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Post[];
+    const posts = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: typeof data.createdAt?.toMillis === 'function' 
+          ? data.createdAt.toMillis() 
+          : (data.createdAt || Date.now()),
+      };
+    }) as Post[];
 
     return NextResponse.json(posts);
   } catch (error: any) {
